@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ff0000">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚗</text></svg>">
+    <title>AutoGuard - Automotive Collision Prevention</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            position: relative;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ff0000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(45deg, #ff0000, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 20px rgba(255, 0, 0, 0.3);
+        }
+
+        .tagline {
+            color: #aaa;
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        .severity-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .severity-low {
+            background: #27ae60;
+        }
+
+        .severity-medium {
+            background: #f39c12;
+        }
+
+        .severity-high {
+            background: #e74c3c;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .camera-container {
+            position: relative;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            background: #000;
+        }
+
+        #camera {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .detection-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .hazard-zone {
+            position: absolute;
+            top: 60%;
+            left: 10%;
+            right: 10%;
+            height: 30%;
+            border: 3px dashed #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        /* Status Panels */
+        .status-panel {
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #333;
+        }
+
+        .hazard-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .hazard-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid #ff0000;
+        }
+
+        .hazard-item.safe {
+            border-left-color: #27ae60;
+        }
+
+        .hazard-item.warning {
+            border-left-color: #f39c12;
+        }
+
+        .hazard-item.danger {
+            border-left-color: #e74c3c;
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+        }
+
+        .btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #d35400);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Small buttons in settings */
+        .mini-btn {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: none;
+            font-size: 0.85rem;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: #fff;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .mini-btn.secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid #555;
+        }
+
+        .mini-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .metric-danger {
+            color: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+
+        .metric-warning {
+            color: #f39c12;
+        }
+
+        .metric-safe {
+            color: #27ae60;
+        }
+
+        /* Alerts */
+        .emergency-alert {
+            background: linear-gradient(45deg, #ff0000, #ff6b6b);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.3rem;
+            display: none;
+            animation: emergencyPulse 0.5s infinite;
+        }
+
+        @keyframes emergencyPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.02); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .vibrate {
+            animation: vibrate 0.3s linear infinite;
+        }
+
+        @keyframes vibrate {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* Car-specific elements */
+        .car-hud {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            margin-top: 15px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .hud-item {
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .hud-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        /* ========= DRIVER CHITCHAT PANEL ========= */
+        .chat-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #333;
+        }
+
+        .chat-status {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .chat-history {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .chat-message {
+            margin-bottom: 8px;
+        }
+
+        .chat-message.assistant {
+            color: #9b59b6;
+        }
+
+        .chat-message.driver {
+            color: #1abc9c;
+        }
+
+        .chat-message strong {
+            font-weight: 600;
+        }
+
+        /* SETTINGS PANEL AS DROPDOWN */
+        .settings-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #333;
+            border-radius: 999px;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+
+        .settings-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border: 1px solid #333;
+        }
+
+        .settings.open {
+            display: true;
+            display: block;
+            animation: fadeDown 0.25s ease-out;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .settings h3 {
+            margin-bottom: 10px;
+        }
+
+        .settings-section {
+            margin-bottom: 16px;
+        }
+
+        .settings-section h4 {
+            margin-bottom: 6px;
+            font-size: 1rem;
+        }
+
+        .settings-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .settings-row input,
+        .settings-row select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            font-size: 0.9rem;
+        }
+
+        .settings-row input::placeholder {
+            color: #777;
+        }
+
+        .slider-value {
+            color: #3498db;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        input[type="range"] {
+            width: 200px;
+            height: 8px;
+            -webkit-appearance: none;
+            background: #333;
+            border-radius: 4px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-switch {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider-switch:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-switch {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        input:checked + .slider-switch:before {
+            transform: translateX(30px);
+        }
+
+        .settings-list {
+            list-style: none;
+            padding-left: 0;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+
+        .settings-list li {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        .badge-primary {
+            background: #3498db;
+        }
+
+        .badge-muted {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        small {
+            font-size: 0.8rem;
+            color: #bbb;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-toggle span {
+                display: none;
+            }
+        }
+    </style>
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase (optional – only used if you configure it) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-car-crash" style="font-size: 2.5rem; color: #ff0000;"></i>
+                <h1>AutoGuard AI</h1>
+            </div>
+            <p class="tagline">Real-time Collision Prevention System for Automotive Safety</p>
+
+            <!-- Settings dropdown toggle -->
+            <button id="settingsToggleBtn" class="settings-toggle" type="button">
+                <i class="fas fa-sliders-h"></i>
+                <span>Safety &amp; Sharing</span>
+            </button>
+
+            <div class="car-hud">
+                <div class="hud-item">
+                    <div>Speed</div>
+                    <div class="hud-value" id="speed">0 km/h</div>
+                </div>
+                <div class="hud-item">
+                    <div>Braking</div>
+                    <div class="hud-value" id="brakeStatus">OFF</div>
+                </div>
+                
+                <div class="hud-item">
+                    <div>System</div>
+                    <div class="hud-value" id="systemStatus">READY</div>
+                </div>
+                <div class="hud-item">
+                    <div>Location</div>
+                    <div class="hud-value" id="homeStatus">UNKNOWN</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard">
+            <div class="camera-container">
+                <video id="camera" autoplay playsinline></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+                
+                <div class="detection-overlay">
+                    <div class="hazard-zone"></div>
+                </div>
+                
+                <div id="noCamera" style="display: none; padding: 50px; text-align: center; color: #888;">
+                    <i class="fas fa-video-slash" style="font-size: 3rem;"></i>
+                    <h3>Camera Not Available</h3>
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <h3><i class="fas fa-exclamation-triangle"></i> Active Hazards
+                    <span id="hazardCount" class="severity-badge severity-low">0</span>
+                </h3>
+                <div class="hazard-list" id="hazardList">
+                    <div class="hazard-item safe">
+                        <strong>No hazards detected</strong><br>
+                        <small>System monitoring active</small>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4><i class="fas fa-chart-line"></i> Response Time</h4>
+                    <div class="metric-value" id="responseTime">-- ms</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="emergencyAlert" class="emergency-alert">
+            <i class="fas fa-car-crash"></i>
+            <strong>EMERGENCY: IMMINENT COLLISION DETECTED!</strong>
+            <i class="fas fa-car-crash"></i>
+            <div style="margin-top: 10px; font-size: 1.1rem;">
+                <div>Brake immediately! Maintain safe distance!</div>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div><i class="fas fa-ruler-combined"></i> Closest Object</div>
+                <div class="metric-value" id="closestDistance">-- m</div>
+                <div>Distance</div>
+            </div>
+            <div class="metric-card">
+                <div><i class="fas fa-tachometer-alt"></i> Time to Impact</div>
+                <div class="metric-value metric-safe" id="timeToImpact">-- s</div>
+                <div>Based on speed</div>
+            </div>
+            <div class="metric-card">
+                <div><i class="fas fa-eye"></i> Detection Rate</div>
+                <div class="metric-value" id="detectionRate">0 FPS</div>
+                <div>Objects per second</div>
+            </div>
+            <div class="metric-card">
+                <div><i class="fas fa-shield-alt"></i> Safety Score</div>
+                <div class="metric-value metric-safe" id="safetyScore">100%</div>
+                <div>Overall safety</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" class="btn btn-success">
+                <i class="fas fa-play"></i> Start System
+            </button>
+            <button id="autoModeBtn" class="btn btn-primary">
+                <i class="fas fa-robot"></i> Auto Mode
+            </button>
+            <button id="testAlertBtn" class="btn btn-warning">
+                <i class="fas fa-bell"></i> Test Alert
+            </button>
+            <button id="emergencyStopBtn" class="btn btn-danger">
+                <i class="fas fa-stop-circle"></i> Emergency Stop
+            </button>
+            <button id="calibrateBtn" class="btn">
+                <i class="fas fa-cogs"></i> Calibrate
+            </button>
+            <button id="chatToggleBtn" class="btn btn-primary">
+                <i class="fas fa-headset"></i> Driver ChitChat
+            </button>
+            <!-- Panic button -->
+            <button id="panicBtn" class="btn btn-danger">
+                <i class="fas fa-exclamation-circle"></i> Panic
+            </button>
+             <!-- WordPanic button -->
+            <a href="ai.html" class="btn btn-warning" style="text-decoration: none;">
+                <i class="fas fa-keyboard"></i> WordPanic
+            </a>
+            <!-- GBV emergency call icon-only button -->
+            <button id="emergencyCallBtn" class="btn btn-danger emergency-btn" title="Call GBV Helpline">
+                <i class="fas fa-phone"></i>
+            </button>
+        </div>
+
+        <!-- Driver Companion / ChitChat Panel -->
+        <div class="chat-panel">
+            <h3><i class="fas fa-headset"></i> Driver Companion</h3>
+            <div id="chatStatus" class="chat-status">
+                Idle – tap "Driver ChitChat" to start voice conversation with Gemini.
+            </div>
+            <div id="chatHistory" class="chat-history">
+                <div class="chat-message assistant">
+                    <strong>AutoGuard:</strong> I am ready to listen and talk to you through Gemini.
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS DROPDOWN -->
+        <div class="settings" id="settingsPanel">
+            <h3><i class="fas fa-sliders-h"></i> Safety Settings &amp; Circles</h3>
+
+            <!-- Collision tuning -->
+            <div class="settings-section">
+                <h4>Collision Sensitivity</h4>
+                <div class="settings-row">
+                    <div>
+                        <strong>Detection Sensitivity</strong><br>
+                        <small>Adjust for different driving conditions</small>
+                    </div>
+                    <div>
+                        <input type="range" id="sensitivity" min="1" max="100" value="75">
+                        <span class="slider-value" id="sensitivityValue">75%</span>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <strong>Safe Following Distance</strong><br>
+                        <small>Minimum safe distance (meters)</small>
+                    </div>
+                    <div>
+                        <input type="range" id="safeDistance" min="1" max="10" step="0.5" value="3">
+                        <span class="slider-value" id="distanceValue">3.0m</span>
+                    </div>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <strong>Enable Audio Warnings</strong><br>
+                        <small>Voice alerts for hazards</small>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="audioWarnings" checked>
+                        <span class="slider-switch"></span>
+                    </label>
+                </div>
+                <div class="settings-row">
+                    <div>
+                        <strong>Automatic Emergency Braking</strong><br>
+                        <small>Simulate AEB system</small>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="autoBraking" checked>
+                        <span class="slider-switch"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- HOME ZONES -->
+            <div class="settings-section">
+                <h4><i class="fas fa-house-user"></i> Saved Home Zones</h4>
+                <div class="settings-row">
+                    <input id="homeLabelInput" type="text" placeholder="Label (e.g. Home, Work)" />
+                    <input id="homeRadiusInput" type="number" min="50" max="5000" step="50" value="300" />
+                    <span><small>Radius (m)</small></span>
+                    <button id="saveHomeBtn" class="mini-btn" type="button">
+                        <i class="fas fa-location-arrow"></i> Save current GPS
+                    </button>
+                </div>
+                <small id="homeStatusDetail">No home zones saved yet.</small>
+                <ul id="homeList" class="settings-list"></ul>
+            </div>
+
+            <!-- EMERGENCY CONTACTS -->
+            <div class="settings-section">
+                <h4><i class="fas fa-user-shield"></i> Emergency Contacts Circle</h4>
+                <div class="settings-row">
+                    <input id="contactNameInput" type="text" placeholder="Name" />
+                    <input id="contactPhoneInput" type="tel" placeholder="Phone (for calls)" />
+                </div>
+                <div class="settings-row">
+                    <input id="contactWhatsAppInput" type="tel" placeholder="WhatsApp number (with country code)" />
+                    <input id="contactEmailInput" type="email" placeholder="Email (for alerts)" />
+                    <button id="addContactBtn" class="mini-btn" type="button">
+                        <i class="fas fa-user-plus"></i> Add
+                    </button>
+                </div>
+                <small>Mark one contact as <strong>Primary</strong> for the panic button.</small>
+                <ul id="contactsList" class="settings-list"></ul>
+            </div>
+
+            <!-- LOCATION SHARING -->
+            <div class="settings-section">
+                <h4><i class="fas fa-location-arrow"></i> Location Sharing</h4>
+                <div class="settings-row">
+                    <select id="shareContactSelect">
+                        <option value="">Select contact to share with</option>
+                    </select>
+                    <select id="shareDurationSelect">
+                        <option value="15">15 minutes</option>
+                        <option value="30">30 minutes</option>
+                        <option value="60">60 minutes</option>
+                    </select>
+                </div>
+                <div class="settings-row">
+                    <button id="startShareBtn" class="mini-btn" type="button">
+                        <i class="fas fa-share-alt"></i> Start sharing
+                    </button>
+                    <button id="stopShareBtn" class="mini-btn secondary" type="button">
+                        Stop
+                    </button>
+                    <button id="sendShareNowBtn" class="mini-btn secondary" type="button">
+                        <i class="fas fa-paper-plane"></i> Send location now
+                    </button>
+                </div>
+                <small id="shareStatusText">Location sharing is off.</small>
+            </div>
+
+            <!-- AI SAFE WORD -->
+            <div class="settings-section">
+                <h4><i class="fas fa-microphone-alt"></i> AI Safe Word (Hijack / Lost)</h4>
+                <div class="settings-row">
+                    <input id="safeWordInput" type="text" placeholder="Set your safe word (e.g. Phoenix)" />
+                    <button id="saveSafeWordBtn" class="mini-btn" type="button">
+                        <i class="fas fa-save"></i> Save Safe Word
+                    </button>
+                </div>
+                <small id="safeWordStatus">No safe word set. Voice trigger is off.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- TensorFlow.js and Models -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@latest"></script>
+    
+    <script>
+        // ==================== COLLISION CONFIGURATION ====================
+        const ROAD_HAZARDS = {
+            'person': { severity: 'HIGH', safeDistance: 5.0 },
+            'car': { severity: 'HIGH', safeDistance: 3.0 },
+            'truck': { severity: 'HIGH', safeDistance: 4.0 },
+            'bus': { severity: 'HIGH', safeDistance: 4.0 },
+            'motorcycle': { severity: 'HIGH', safeDistance: 2.5 },
+            'bicycle': { severity: 'HIGH', safeDistance: 2.0 },
+            'traffic light': { severity: 'MEDIUM', safeDistance: 2.0 },
+            'stop sign': { severity: 'MEDIUM', safeDistance: 2.0 },
+            'parking meter': { severity: 'MEDIUM', safeDistance: 1.5 },
+            'bench': { severity: 'LOW', safeDistance: 1.0 },
+            'pothole': { severity: 'MEDIUM', safeDistance: 1.0 },
+            'road debris': { severity: 'MEDIUM', safeDistance: 1.5 },
+            'animal': { severity: 'HIGH', safeDistance: 3.0 }
+        };
+
+        // ==================== GEMINI CONFIG ====================
+        const GEMINI_API_KEY = "AIzaSyAoejzh5ZhSO7nKZ4xho5xVWqGhrHOweqA"; // your key
+        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        // ==================== FIREBASE (ACTIVE CONFIG) ====================
+        let db = null;
+
+        try {
+            const firebaseConfig = {
+                apiKey: "AIzaSyAl3sm_8h5qhuXxdMGb-auDfDGYQ81c-jw",
+                authDomain: "autoguard-d1fee.firebaseapp.com",
+                databaseURL: "https://autoguard-d1fee-default-rtdb.firebaseio.com",
+                projectId: "autoguard-d1fee",
+                storageBucket: "autoguard-d1fee.firebasestorage.app",
+                messagingSenderId: "103353595366",
+                appId: "1:103353595366:web:4909fc7c7bd674e1859227",
+                measurementId: "G-2NJPTJECP1"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            console.log("🔥 Firebase connected successfully");
+        } catch (error) {
+            console.error("❌ Firebase initialization failed:", error);
+            console.log("Fallback → Using localStorage only.");
+        }
+
+        // ==================== STATE VARIABLES ====================
+        let systemActive = false;
+        let detectionModel = null;
+        let cameraStream = null;
+        let detectionInterval = null;
+        let frameCount = 0;
+        let lastUpdate = Date.now();
+        
+        let closestObject = { distance: Infinity, type: '', confidence: 0 };
+        let activeHazards = [];
+        let safetyScore = 100;
+        let simulatedSpeed = 0; // km/h
+        let emergencyBraking = false;
+
+        // ChitChat state
+        let chitChatActive = false;
+        let recognition = null;
+        let chitChatInterval = null;
+        let lastDriverInteraction = Date.now();
+        const CHITCHAT_CHECK_INTERVAL = 45000;
+
+        // Gemini typing effect state
+        let isResponseGenerating = false;
+        let typingInterval = null;
+
+        // Location / home state
+        let homes = [];
+        let contacts = [];
+        let geoWatchId = null;
+        let lastKnownLocation = null;
+
+        let locationSharingActive = false;
+        let locationShareEndTime = null;
+        let locationShareTimer = null;
+
+        // AI Safe Word state
+        let safeWord = "";
+        let safeWordRecognition = null;
+
+        // ==================== DOM ELEMENTS ====================
+        const elements = {
+            camera: document.getElementById('camera'),
+            canvas: document.getElementById('canvas'),
+            startBtn: document.getElementById('startBtn'),
+            autoModeBtn: document.getElementById('autoModeBtn'),
+            testAlertBtn: document.getElementById('testAlertBtn'),
+            emergencyStopBtn: document.getElementById('emergencyStopBtn'),
+            calibrateBtn: document.getElementById('calibrateBtn'),
+            emergencyAlert: document.getElementById('emergencyAlert'),
+            hazardCount: document.getElementById('hazardCount'),
+            hazardList: document.getElementById('hazardList'),
+            closestDistance: document.getElementById('closestDistance'),
+            timeToImpact: document.getElementById('timeToImpact'),
+            detectionRate: document.getElementById('detectionRate'),
+            safetyScore: document.getElementById('safetyScore'),
+            responseTime: document.getElementById('responseTime'),
+            speed: document.getElementById('speed'),
+            brakeStatus: document.getElementById('brakeStatus'),
+            systemStatus: document.getElementById('systemStatus'),
+            homeStatus: document.getElementById('homeStatus'),
+
+            // Settings toggle + panel
+            settingsToggleBtn: document.getElementById('settingsToggleBtn'),
+            settingsPanel: document.getElementById('settingsPanel'),
+
+            // Collision settings
+            sensitivity: document.getElementById('sensitivity'),
+            sensitivityValue: document.getElementById('sensitivityValue'),
+            safeDistance: document.getElementById('safeDistance'),
+            distanceValue: document.getElementById('distanceValue'),
+            audioWarnings: document.getElementById('audioWarnings'),
+            autoBraking: document.getElementById('autoBraking'),
+
+            // Home zones
+            homeLabelInput: document.getElementById('homeLabelInput'),
+            homeRadiusInput: document.getElementById('homeRadiusInput'),
+            saveHomeBtn: document.getElementById('saveHomeBtn'),
+            homeList: document.getElementById('homeList'),
+            homeStatusDetail: document.getElementById('homeStatusDetail'),
+
+            // Contacts
+            contactNameInput: document.getElementById('contactNameInput'),
+            contactPhoneInput: document.getElementById('contactPhoneInput'),
+            contactWhatsAppInput: document.getElementById('contactWhatsAppInput'),
+            contactEmailInput: document.getElementById('contactEmailInput'),
+            addContactBtn: document.getElementById('addContactBtn'),
+            contactsList: document.getElementById('contactsList'),
+
+            // Location sharing
+            shareContactSelect: document.getElementById('shareContactSelect'),
+            shareDurationSelect: document.getElementById('shareDurationSelect'),
+            startShareBtn: document.getElementById('startShareBtn'),
+            stopShareBtn: document.getElementById('stopShareBtn'),
+            sendShareNowBtn: document.getElementById('sendShareNowBtn'),
+            shareStatusText: document.getElementById('shareStatusText'),
+
+            // ChitChat
+            chatToggleBtn: document.getElementById('chatToggleBtn'),
+            chatStatus: document.getElementById('chatStatus'),
+            chatHistory: document.getElementById('chatHistory'),
+
+            // Panic
+            panicBtn: document.getElementById('panicBtn'),
+
+            // AI safe word
+            safeWordInput: document.getElementById('safeWordInput'),
+            saveSafeWordBtn: document.getElementById('saveSafeWordBtn'),
+            safeWordStatus: document.getElementById('safeWordStatus')
+        };
+
+        // ==================== GENERIC SPEECH HELPER ====================
+        function speakText(text, options = {}) {
+            if (!('speechSynthesis' in window)) return;
+            
+            const rate = options.rate || 1;
+            const pitch = options.pitch || 1.1;
+            const volume = options.volume || 1;
+            const speech = new SpeechSynthesisUtterance();
+            speech.text = text;
+            speech.rate = rate;
+            speech.pitch = pitch;
+            speech.volume = volume;
+            
+            window.speechSynthesis.cancel();
+            
+            if (elements.audioWarnings.checked || chitChatActive) {
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+        // ==================== INITIALIZATION ====================
+        async function initializeSystem() {
+            console.log('🚗 AutoGuard AI Initializing...');
+            try {
+                elements.systemStatus.textContent = 'LOADING AI';
+                elements.systemStatus.style.color = '#f39c12';
+                
+                detectionModel = await cocoSsd.load({ base: 'mobilenet_v2' });
+                
+                console.log('✅ AI Model loaded');
+                elements.systemStatus.textContent = 'AI READY';
+                elements.systemStatus.style.color = '#27ae60';
+                
+                elements.startBtn.disabled = false;
+                elements.startBtn.innerHTML = '<i class="fas fa-play"></i> Start System';
+                
+                // Load home / contacts / safe word
+                loadPersistedData();
+
+                updateSettingsDisplay();
+                initializeChitChatEngine();
+                initializeSafeWordRecognition();
+                startLocationWatch();
+                
+            } catch (error) {
+                console.error('❌ Model loading failed:', error);
+                elements.systemStatus.textContent = 'AI FAILED';
+                elements.systemStatus.style.color = '#e74c3c';
+                alert('AI model failed to load. Please check your internet connection.');
+            }
+        }
+
+        // ==================== CAMERA SYSTEM ====================
+        async function startCameraSystem() {
+            if (systemActive) return;
+            
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    },
+                    audio: false
+                });
+                
+                elements.camera.srcObject = cameraStream;
+                
+                await new Promise(resolve => {
+                    elements.camera.onloadedmetadata = () => {
+                        elements.canvas.width = elements.camera.videoWidth;
+                        elements.canvas.height = elements.camera.videoHeight;
+                        resolve();
+                    };
+                });
+                
+                systemActive = true;
+                elements.startBtn.innerHTML = '<i class="fas fa-pause"></i> Stop System';
+                elements.systemStatus.textContent = 'ACTIVE';
+                elements.systemStatus.style.color = '#27ae60';
+                
+                startDrivingSimulation();
+                startDetectionLoop();
+                
+                console.log('✅ Camera system activated');
+            } catch (error) {
+                console.error('❌ Camera error:', error);
+                alert('Camera access required for safety system. Please enable camera permissions and reload the page.');
+            }
+        }
+
+        function stopCameraSystem() {
+            systemActive = false;
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+            }
+            elements.startBtn.innerHTML = '<i class="fas fa-play"></i> Start System';
+            elements.systemStatus.textContent = 'STANDBY';
+            elements.systemStatus.style.color = '#f39c12';
+            clearHazardDisplay();
+        }
+
+        // ==================== DETECTION ENGINE ====================
+        async function startDetectionLoop() {
+            if (!systemActive) return;
+            
+            detectionInterval = setInterval(async () => {
+                try {
+                    const startTime = performance.now();
+                    const ctx = elements.canvas.getContext('2d');
+                    
+                    ctx.drawImage(elements.camera, 0, 0, elements.canvas.width, elements.canvas.height);
+                    
+                    const predictions = await detectionModel.detect(elements.canvas);
+                    processRoadHazards(predictions);
+                    
+                    const endTime = performance.now();
+                    updateDetectionMetrics(endTime - startTime);
+                    frameCount++;
+                    
+                } catch (error) {
+                    console.error('Detection error:', error);
+                }
+            }, 100); // 10 FPS
+        }
+
+        function processRoadHazards(predictions) {
+            const currentHazards = [];
+            closestObject = { distance: Infinity, type: '', confidence: 0 };
+            
+            const sensitivity = parseInt(elements.sensitivity.value, 10) / 100;
+            
+            predictions.forEach(prediction => {
+                const hazardType = prediction.class.toLowerCase();
+                
+                if (ROAD_HAZARDS[hazardType]) {
+                    const hazardConfig = ROAD_HAZARDS[hazardType];
+                    const confidence = prediction.score;
+                    
+                    const bboxArea = prediction.bbox[2] * prediction.bbox[3];
+                    const canvasArea = elements.canvas.width * elements.canvas.height;
+                    const distanceRatio = bboxArea / canvasArea;
+                    const estimatedDistance = Math.max(0.5, 5 / Math.sqrt(distanceRatio));
+                    
+                    if (confidence >= (0.5 * sensitivity)) {
+                        const hazard = {
+                            type: hazardType,
+                            confidence: Math.round(confidence * 100),
+                            distance: estimatedDistance.toFixed(1),
+                            severity: hazardConfig.severity,
+                            safeDistance: hazardConfig.safeDistance,
+                            bbox: prediction.bbox
+                        };
+                        currentHazards.push(hazard);
+                        
+                        if (estimatedDistance < closestObject.distance) {
+                            closestObject = {
+                                distance: estimatedDistance,
+                                type: hazardType,
+                                confidence: Math.round(confidence * 100)
+                            };
+                        }
+                        
+                        if (estimatedDistance < hazardConfig.safeDistance * 0.5) {
+                            triggerEmergencyAlert(hazard);
+                        }
+                    }
+                }
+            });
+            
+            activeHazards = currentHazards;
+            updateHazardDisplay();
+            updateSafetyScore();
+        }
+
+        // ==================== EMERGENCY SYSTEM ====================
+        function triggerEmergencyAlert(hazard) {
+            if (emergencyBraking) return;
+            
+            emergencyBraking = true;
+            
+            elements.emergencyAlert.style.display = 'block';
+            document.body.classList.add('vibrate');
+            
+            elements.brakeStatus.textContent = 'ACTIVE';
+            elements.brakeStatus.style.color = '#e74c3c';
+            
+            if (elements.audioWarnings.checked) {
+                speakEmergencyAlert(hazard);
+            }
+            
+            if (elements.autoBraking.checked) {
+                simulatedSpeed = Math.max(0, simulatedSpeed - 30);
+                updateSpeedDisplay();
+            }
+            
+            setTimeout(() => {
+                emergencyBraking = false;
+                elements.emergencyAlert.style.display = 'none';
+                document.body.classList.remove('vibrate');
+                elements.brakeStatus.textContent = 'STANDBY';
+                elements.brakeStatus.style.color = '#f39c3c';
+            }, 3000);
+        }
+
+        function speakEmergencyAlert(hazard) {
+            const text = 'Emergency! ' + hazard.type + ' detected at ' + hazard.distance + ' meters! Brake immediately!';
+            speakText(text, { rate: 0.9, pitch: 1.5, volume: 1 });
+        }
+
+        // ==================== DISPLAY UPDATES ====================
+        function updateHazardDisplay() {
+            const hazardCount = activeHazards.length;
+            elements.hazardCount.textContent = hazardCount.toString();
+            
+            const hasHighSeverity = activeHazards.some(h => h.severity === 'HIGH');
+            const hasMediumSeverity = activeHazards.some(h => h.severity === 'MEDIUM');
+            
+            if (hasHighSeverity) {
+                elements.hazardCount.className = 'severity-badge severity-high';
+            } else if (hasMediumSeverity) {
+                elements.hazardCount.className = 'severity-badge severity-medium';
+            } else {
+                elements.hazardCount.className = 'severity-badge severity-low';
+            }
+            
+            elements.hazardList.innerHTML = '';
+            
+            if (hazardCount === 0) {
+                elements.hazardList.innerHTML =
+                    '<div class="hazard-item safe">' +
+                        '<strong>No hazards detected</strong><br>' +
+                        '<small>Safe driving conditions</small>' +
+                    '</div>';
+                return;
+            }
+            
+            activeHazards.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+            
+            activeHazards.slice(0, 5).forEach(hazard => {
+                const item = document.createElement('div');
+                item.className = 'hazard-item ' + hazard.severity.toLowerCase();
+                
+                const icon = hazard.severity === 'HIGH' ? 'fa-exclamation-circle' :
+                             hazard.severity === 'MEDIUM' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+                
+                item.innerHTML =
+                    '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                        '<div>' +
+                            '<i class="fas ' + icon + '"></i>' +
+                            '<strong>' + hazard.type.toUpperCase() + '</strong>' +
+                        '</div>' +
+                        '<span>' + hazard.distance + 'm</span>' +
+                    '</div>' +
+                    '<small>Confidence: ' + hazard.confidence + '% | Safe: ' + hazard.safeDistance + 'm</small>';
+                
+                elements.hazardList.appendChild(item);
+            });
+        }
+
+        function clearHazardDisplay() {
+            elements.hazardList.innerHTML =
+                '<div class="hazard-item safe">' +
+                    '<strong>System offline</strong><br>' +
+                    '<small>Start system to begin detection</small>' +
+                '</div>';
+            
+            elements.hazardCount.textContent = '0';
+            elements.hazardCount.className = 'severity-badge severity-low';
+            elements.closestDistance.textContent = '-- m';
+            elements.timeToImpact.textContent = '-- s';
+            elements.detectionRate.textContent = '0 FPS';
+            elements.safetyScore.textContent = '100%';
+        }
+
+        function updateDetectionMetrics(responseTime) {
+            elements.responseTime.textContent = Math.round(responseTime) + ' ms';
+            
+            if (closestObject.distance < Infinity) {
+                elements.closestDistance.textContent = closestObject.distance.toFixed(1) + ' m';
+                
+                const safeDistance = parseFloat(elements.safeDistance.value);
+                if (closestObject.distance < safeDistance * 0.5) {
+                    elements.closestDistance.className = 'metric-value metric-danger';
+                } else if (closestObject.distance < safeDistance) {
+                    elements.closestDistance.className = 'metric-value metric-warning';
+                } else {
+                    elements.closestDistance.className = 'metric-value metric-safe';
+                }
+                
+                if (simulatedSpeed > 0) {
+                    const speedMps = simulatedSpeed / 3.6;
+                    const tti = closestObject.distance / speedMps;
+                    elements.timeToImpact.textContent = tti.toFixed(1) + ' s';
+                    
+                    if (tti < 2) {
+                        elements.timeToImpact.className = 'metric-value metric-danger';
+                    } else if (tti < 5) {
+                        elements.timeToImpact.className = 'metric-value metric-warning';
+                    } else {
+                        elements.timeToImpact.className = 'metric-value metric-safe';
+                    }
+                }
+            }
+            
+            const now = Date.now();
+            if (now - lastUpdate > 1000) {
+                const fps = Math.round((frameCount * 1000) / (now - lastUpdate));
+                elements.detectionRate.textContent = fps + ' FPS';
+                frameCount = 0;
+                lastUpdate = now;
+            }
+        }
+
+        function updateSafetyScore() {
+            let score = 100;
+            activeHazards.forEach(hazard => {
+                const distanceRatio = parseFloat(hazard.distance) / hazard.safeDistance;
+                if (distanceRatio < 0.5) {
+                    score -= 30;
+                } else if (distanceRatio < 1) {
+                    score -= 15;
+                } else if (distanceRatio < 2) {
+                    score -= 5;
+                }
+            });
+            score = Math.max(0, Math.min(100, score));
+            safetyScore = score;
+            elements.safetyScore.textContent = score + '%';
+            
+            if (score >= 80) {
+                elements.safetyScore.className = 'metric-value metric-safe';
+            } else if (score >= 60) {
+                elements.safetyScore.className = 'metric-value metric-warning';
+            } else {
+                elements.safetyScore.className = 'metric-value metric-danger';
+            }
+        }
+
+        // ==================== DRIVING SIMULATION ====================
+        function startDrivingSimulation() {
+            setInterval(() => {
+                if (systemActive && !emergencyBraking) {
+                    const speedChange = Math.random() * 10 - 5;
+                    simulatedSpeed = Math.max(0, Math.min(120, simulatedSpeed + speedChange));
+                    
+                    if (closestObject.distance < parseFloat(elements.safeDistance.value)) {
+                        simulatedSpeed = Math.max(0, simulatedSpeed - Math.random() * 5);
+                    }
+                    updateSpeedDisplay();
+                }
+            }, 1000);
+        }
+
+        function updateSpeedDisplay() {
+            elements.speed.textContent = Math.round(simulatedSpeed) + ' km/h';
+            
+            if (closestObject.distance < Infinity) {
+                const safeDistance = parseFloat(elements.safeDistance.value);
+                const relativeSpeed = simulatedSpeed / 50;
+                
+                if (closestObject.distance < safeDistance && relativeSpeed > 0.8) {
+                    elements.speed.style.color = '#e74c3c';
+                } else if (closestObject.distance < safeDistance * 2) {
+                    elements.speed.style.color = '#f39c12';
+                } else {
+                    elements.speed.style.color = '#27ae60';
+                }
+            }
+        }
+
+        // ==================== SETTINGS ====================
+        function updateSettingsDisplay() {
+            elements.sensitivityValue.textContent = elements.sensitivity.value + '%';
+            elements.sensitivity.addEventListener('input', () => {
+                elements.sensitivityValue.textContent = elements.sensitivity.value + '%';
+            });
+            
+            elements.distanceValue.textContent = elements.safeDistance.value + 'm';
+            elements.safeDistance.addEventListener('input', () => {
+                elements.distanceValue.textContent = elements.safeDistance.value + 'm';
+            });
+        }
+
+        // ==================== LOCATION / HOME ZONES ====================
+        function loadPersistedData() {
+            try {
+                const homesRaw = localStorage.getItem('autoguard_homes');
+                if (homesRaw) homes = JSON.parse(homesRaw) || [];
+            } catch {
+                homes = [];
+            }
+
+            try {
+                const contactsRaw = localStorage.getItem('autoguard_contacts');
+                if (contactsRaw) contacts = JSON.parse(contactsRaw) || [];
+            } catch {
+                contacts = [];
+            }
+
+            try {
+                const safeRaw = localStorage.getItem('autoguard_safeWord');
+                if (safeRaw) safeWord = safeRaw;
+            } catch {
+                safeWord = "";
+            }
+
+            renderHomes();
+            renderContacts();
+            updateSafeWordStatus();
+        }
+
+        function persistHomes() {
+            localStorage.setItem('autoguard_homes', JSON.stringify(homes));
+            if (db) {
+                db.collection('autoguard_demo').doc('homes').set({ homes }, { merge: true }).catch(() => {});
+            }
+        }
+
+        function persistContacts() {
+            localStorage.setItem('autoguard_contacts', JSON.stringify(contacts));
+            if (db) {
+                db.collection('autoguard_demo').doc('contacts').set({ contacts }, { merge: true }).catch(() => {});
+            }
+            populateShareContacts();
+        }
+
+        function persistSafeWord() {
+            localStorage.setItem('autoguard_safeWord', safeWord || "");
+            if (db) {
+                db.collection('autoguard_demo').doc('safeWord').set({ safeWord }, { merge: true }).catch(() => {});
+            }
+        }
+
+        function startLocationWatch() {
+            if (!('geolocation' in navigator)) {
+                console.warn('Geolocation not supported');
+                elements.homeStatus.textContent = 'NO GPS';
+                elements.homeStatus.style.color = '#f39c12';
+                return;
+            }
+            if (geoWatchId !== null) return;
+
+            geoWatchId = navigator.geolocation.watchPosition(onLocationUpdate, onLocationError, {
+                enableHighAccuracy: true,
+                maximumAge: 5000,
+                timeout: 10000
+            });
+        }
+
+        function onLocationUpdate(pos) {
+            lastKnownLocation = {
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                accuracy: pos.coords.accuracy
+            };
+            updateHomeStatus();
+        }
+
+        function onLocationError(err) {
+            console.warn('Location error:', err);
+            elements.homeStatus.textContent = 'NO GPS';
+            elements.homeStatus.style.color = '#f39c12';
+        }
+
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const toRad = deg => deg * Math.PI / 180;
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = Math.sin(dLat/2)**2 +
+                      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                      Math.sin(dLon/2)**2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function updateHomeStatus() {
+            if (!lastKnownLocation || homes.length === 0) {
+                elements.homeStatus.textContent = homes.length === 0 ? 'NO HOME' : 'AWAY';
+                elements.homeStatus.style.color = '#f39c12';
+                elements.homeStatusDetail.textContent = homes.length === 0
+                    ? 'No home zones saved yet.'
+                    : 'Waiting for GPS fix or outside saved zones.';
+                return;
+            }
+
+            let insideHome = null;
+            for (const home of homes) {
+                const d = haversineDistance(lastKnownLocation.lat, lastKnownLocation.lng, home.lat, home.lng);
+                if (d <= home.radiusMeters) {
+                    insideHome = { home, distance: d };
+                    break;
+                }
+            }
+
+            if (insideHome) {
+                elements.homeStatus.textContent = insideHome.home.label || 'HOME';
+                elements.homeStatus.style.color = '#27ae60';
+                elements.homeStatusDetail.textContent =
+                    `Inside "${insideHome.home.label}" zone (±${Math.round(insideHome.distance)} m, radius ${insideHome.home.radiusMeters} m).`;
+            } else {
+                elements.homeStatus.textContent = 'AWAY';
+                elements.homeStatus.style.color = '#e74c3c';
+                elements.homeStatusDetail.textContent = 'Outside all saved home zones.';
+            }
+        }
+
+        function renderHomes() {
+            elements.homeList.innerHTML = '';
+            if (homes.length === 0) {
+                elements.homeList.innerHTML = '<li><span>No homes saved yet.</span></li>';
+                return;
+            }
+            homes.forEach(home => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${home.label} &middot; radius ${home.radiusMeters} m</span>
+                    <span class="badge badge-muted">${home.lat.toFixed(4)}, ${home.lng.toFixed(4)}</span>
+                `;
+                elements.homeList.appendChild(li);
+            });
+        }
+
+        function handleSaveHome() {
+            if (!lastKnownLocation) {
+                alert('Waiting for GPS. Please ensure location is enabled.');
+                return;
+            }
+            const label = elements.homeLabelInput.value.trim() || 'Home';
+            const radius = parseInt(elements.homeRadiusInput.value, 10) || 300;
+            const home = {
+                id: Date.now().toString(),
+                label,
+                radiusMeters: radius,
+                lat: lastKnownLocation.lat,
+                lng: lastKnownLocation.lng
+            };
+            homes.push(home);
+            persistHomes();
+            renderHomes();
+            updateHomeStatus();
+            elements.homeLabelInput.value = '';
+        }
+
+        // ==================== CONTACTS & CIRCLE ====================
+        function renderContacts() {
+            elements.contactsList.innerHTML = '';
+            if (contacts.length === 0) {
+                elements.contactsList.innerHTML = '<li><span>No emergency contacts yet.</span></li>';
+                populateShareContacts();
+                return;
+            }
+            contacts.forEach(contact => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>
+                        ${contact.name}
+                        <span class="badge ${contact.primary ? 'badge-primary' : 'badge-muted'}">
+                            ${contact.primary ? 'Primary' : 'Backup'}
+                        </span>
+                    </span>
+                    <span>
+                        <small>${contact.phone || ''}</small>
+                    </span>
+                `;
+                li.addEventListener('click', () => setPrimaryContact(contact.id));
+                elements.contactsList.appendChild(li);
+            });
+            populateShareContacts();
+        }
+
+        function setPrimaryContact(id) {
+            contacts = contacts.map(c => ({ ...c, primary: c.id === id }));
+            persistContacts();
+            renderContacts();
+        }
+
+        function handleAddContact() {
+            const name = elements.contactNameInput.value.trim();
+            const phone = elements.contactPhoneInput.value.trim();
+            const wa = elements.contactWhatsAppInput.value.trim();
+            const email = elements.contactEmailInput.value.trim();
+
+            if (!name || (!phone && !wa && !email)) {
+                alert('Please provide at least a name and one contact method.');
+                return;
+            }
+
+            const newContact = {
+                id: Date.now().toString(),
+                name,
+                phone,
+                whatsapp: wa || phone,
+                email,
+                primary: contacts.length === 0
+            };
+
+            contacts.push(newContact);
+            persistContacts();
+            renderContacts();
+
+            elements.contactNameInput.value = '';
+            elements.contactPhoneInput.value = '';
+            elements.contactWhatsAppInput.value = '';
+            elements.contactEmailInput.value = '';
+        }
+
+        function populateShareContacts() {
+            elements.shareContactSelect.innerHTML = '<option value="">Select contact to share with</option>';
+            contacts.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name;
+                elements.shareContactSelect.appendChild(opt);
+            });
+        }
+
+        function getPrimaryContact() {
+            const primary = contacts.find(c => c.primary);
+            return primary || contacts[0] || null;
+        }
+
+        // ==================== LOCATION SHARING ====================
+        function startLocationSharing() {
+            if (!lastKnownLocation) {
+                alert('Waiting for GPS position. Please ensure location is enabled.');
+                return;
+            }
+            const contactId = elements.shareContactSelect.value;
+            if (!contactId) {
+                alert('Please select a contact to share your location with.');
+                return;
+            }
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) {
+                alert('Invalid contact.');
+                return;
+            }
+            const minutes = parseInt(elements.shareDurationSelect.value, 10) || 15;
+
+            locationSharingActive = true;
+            locationShareEndTime = Date.now() + minutes * 60 * 1000;
+            elements.shareStatusText.textContent =
+                `Sharing location with ${contact.name} for ${minutes} minutes. Use "Send location now" to push via WhatsApp/email.`;
+
+            if (locationShareTimer) clearInterval(locationShareTimer);
+            locationShareTimer = setInterval(() => {
+                if (!locationSharingActive) return;
+                if (Date.now() >= locationShareEndTime) {
+                    stopLocationSharing();
+                }
+            }, 10000);
+        }
+
+        function stopLocationSharing() {
+            locationSharingActive = false;
+            locationShareEndTime = null;
+            if (locationShareTimer) {
+                clearInterval(locationShareTimer);
+                locationShareTimer = null;
+            }
+            elements.shareStatusText.textContent = 'Location sharing is off.';
+        }
+
+        function buildLocationText() {
+            if (!lastKnownLocation) {
+                return 'Location not available yet.';
+            }
+            const url = `https://www.google.com/maps?q=${lastKnownLocation.lat},${lastKnownLocation.lng}`;
+            return `My current location (via AutoGuard): ${url}`;
+        }
+
+        function sendLocationNow() {
+            if (!locationSharingActive) {
+                alert('Location sharing is not active. Start sharing first.');
+                return;
+            }
+            const contactId = elements.shareContactSelect.value;
+            const contact = contacts.find(c => c.id === contactId);
+            if (!contact) {
+                alert('Contact not found.');
+                return;
+            }
+
+            const msg = encodeURIComponent(buildLocationText());
+
+            if (contact.whatsapp) {
+                const waUrl = `https://wa.me/${encodeURIComponent(contact.whatsapp)}?text=${msg}`;
+                window.open(waUrl, '_blank');
+            } else {
+                const waUrl = `https://wa.me/?text=${msg}`;
+                window.open(waUrl, '_blank');
+            }
+
+            if (contact.email) {
+                const mailUrl =
+                    `mailto:${encodeURIComponent(contact.email)}?subject=${encodeURIComponent('Live Location - AutoGuard')}&body=${msg}`;
+                window.open(mailUrl, '_blank');
+            }
+
+            elements.shareStatusText.textContent = `Last location sent to ${contact.name} at ${new Date().toLocaleTimeString()}.`;
+        }
+
+        // ==================== PANIC BUTTON ====================
+        function handlePanic() {
+            const primary = getPrimaryContact();
+            if (!primary) {
+                alert('Please add at least one emergency contact in Settings.');
+                return;
+            }
+
+            const msg = encodeURIComponent(
+                'EMERGENCY: I need help now.\n' + buildLocationText()
+            );
+
+            if (primary.whatsapp || primary.phone) {
+                const waNumber = primary.whatsapp || primary.phone;
+                const waUrl = `https://wa.me/${encodeURIComponent(waNumber)}?text=${msg}`;
+                window.open(waUrl, '_blank');
+            }
+
+            if (primary.email) {
+                const mailUrl =
+                    `mailto:${encodeURIComponent(primary.email)}?subject=${encodeURIComponent('EMERGENCY - AutoGuard')}&body=${msg}`;
+                window.open(mailUrl, '_blank');
+            }
+
+            if (primary.phone) {
+                const telUrl = `tel:${primary.phone}`;
+                window.open(telUrl, '_self');
+            }
+
+            speakText('Emergency alerts are being prepared for your contacts.', {
+                rate: 1.05,
+                pitch: 1.2
+            });
+        }
+
+        // ==================== AI SAFE WORD ====================
+        function updateSafeWordStatus() {
+            if (!elements.safeWordStatus) return;
+            if (!safeWord) {
+                elements.safeWordStatus.textContent = 'No safe word set. Voice trigger is off.';
+            } else {
+                elements.safeWordStatus.textContent =
+                    'Safe word "' + safeWord + '" is set. Say it clearly if you need emergency help.';
+            }
+        }
+
+        function handleSaveSafeWord() {
+            const value = elements.safeWordInput.value.trim();
+            if (!value) {
+                safeWord = "";
+                persistSafeWord();
+                updateSafeWordStatus();
+                if (safeWordRecognition) {
+                    try { safeWordRecognition.stop(); } catch (e) {}
+                }
+                alert('Safe word cleared.');
+                return;
+            }
+
+            safeWord = value;
+            persistSafeWord();
+            updateSafeWordStatus();
+
+            if (!safeWordRecognition) {
+                initializeSafeWordRecognition();
+            } else {
+                try {
+                    safeWordRecognition.stop();
+                    safeWordRecognition.start();
+                } catch (e) {
+                    console.warn('Safe word recognition restart issue:', e);
+                }
+            }
+
+            alert('Safe word "' + safeWord + '" saved and listening is active.');
+        }
+
+        function handleSafeWordTrigger(heardText) {
+            console.log('Safe word detected in:', heardText);
+            speakText('Emergency safe word detected. Calling the police now.', {
+                rate: 1.0,
+                pitch: 1.0
+            });
+
+            // South African Police emergency number (mobile)
+            const emergencyNumber = '10111';
+            window.location.href = 'tel:' + emergencyNumber;
+        }
+
+        function initializeSafeWordRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                console.warn('SpeechRecognition not supported');
+                elements.safeWordStatus.textContent =
+                    'Safe word: not supported on this browser. Use the Panic or Call buttons instead.';
+                return;
+            }
+
+            safeWordRecognition = new SpeechRecognition();
+            safeWordRecognition.continuous = true;
+            safeWordRecognition.interimResults = false;
+            safeWordRecognition.lang = 'en-ZA';
+
+            safeWordRecognition.onresult = (event) => {
+                if (!safeWord) return;
+                const lastResult = event.results[event.results.length - 1];
+                if (!lastResult.isFinal) return;
+                const transcript = lastResult[0].transcript.trim().toLowerCase();
+                if (safeWord && transcript.includes(safeWord.toLowerCase())) {
+                    handleSafeWordTrigger(transcript);
+                }
+            };
+
+            safeWordRecognition.onerror = (event) => {
+                console.warn('SafeWord recognition error:', event.error);
+            };
+
+            safeWordRecognition.onend = () => {
+                if (safeWord) {
+                    try { safeWordRecognition.start(); } catch (e) {}
+                }
+            };
+
+            if (safeWord) {
+                try { safeWordRecognition.start(); } catch (e) {
+                    console.warn('Unable to start safeWord recognition initially:', e);
+                }
+            }
+        }
+
+        // ==================== DRIVER CHITCHAT + GEMINI ====================
+        function appendChatMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = 'chat-message ' + (role === 'assistant' ? 'assistant' : 'driver');
+            div.innerHTML = `<strong>${role === 'assistant' ? 'AutoGuard' : 'Driver'}:</strong> ${text}`;
+            elements.chatHistory.appendChild(div);
+            elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
+        }
+
+        async function sendToGemini(promptText) {
+            try {
+                const payload = {
+                    contents: [
+                        {
+                            role: 'user',
+                            parts: [{ text: promptText }]
+                        }
+                    ]
+                };
+
+                const res = await fetch(GEMINI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'I am not sure how to respond right now.';
+                return text;
+            } catch (err) {
+                console.error('Gemini call failed:', err);
+                return 'I am offline at the moment. Please focus on the road.';
+            }
+        }
+
+        function initializeChitChatEngine() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                elements.chatStatus.textContent = 'Voice conversation not supported in this browser.';
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = false;
+            recognition.lang = 'en-ZA';
+
+            recognition.onresult = async (event) => {
+                const last = event.results[event.results.length - 1];
+                if (!last.isFinal) return;
+                const transcript = last[0].transcript.trim();
+                lastDriverInteraction = Date.now();
+                appendChatMessage('driver', transcript);
+
+                const response = await sendToGemini(
+                    'You are a calm, safe-driving assistant. Keep responses short and supportive. Driver says: ' + transcript
+                );
+                appendChatMessage('assistant', response);
+                speakText(response, { rate: 1, pitch: 1.1, volume: 1 });
+            };
+
+            recognition.onerror = (event) => {
+                console.warn('ChitChat recognition error:', event.error);
+            };
+
+            recognition.onend = () => {
+                if (chitChatActive) {
+                    try { recognition.start(); } catch (e) {}
+                }
+            };
+        }
+
+        function toggleChitChat() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition || !recognition) return;
+
+            chitChatActive = !chitChatActive;
+            if (chitChatActive) {
+                try { recognition.start(); } catch (e) {}
+                elements.chatStatus.textContent = 'Listening… talk to AutoGuard while you drive.';
+                elements.chatToggleBtn.classList.add('btn-success');
+                elements.chatToggleBtn.classList.remove('btn-primary');
+            } else {
+                try { recognition.stop(); } catch (e) {}
+                elements.chatStatus.textContent = 'Idle – tap "Driver ChitChat" to start voice conversation with Gemini.';
+                elements.chatToggleBtn.classList.add('btn-primary');
+                elements.chatToggleBtn.classList.remove('btn-success');
+            }
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        function wireEventListeners() {
+            elements.startBtn.addEventListener('click', () => {
+                if (!systemActive) {
+                    startCameraSystem();
+                } else {
+                    stopCameraSystem();
+                }
+            });
+
+            elements.autoModeBtn.addEventListener('click', () => {
+                elements.autoModeBtn.classList.toggle('btn-primary');
+                elements.autoModeBtn.classList.toggle('btn-success');
+                
+                if (elements.autoModeBtn.innerHTML.includes('ON')) {
+                    elements.autoModeBtn.innerHTML = '<i class="fas fa-robot"></i> Auto Mode OFF';
+                } else {
+                    elements.autoModeBtn.innerHTML = '<i class="fas fa-robot"></i> Auto Mode ON';
+                }
+            });
+
+            elements.testAlertBtn.addEventListener('click', () => {
+                triggerEmergencyAlert({
+                    type: 'test vehicle',
+                    distance: '1.5',
+                    severity: 'HIGH'
+                });
+            });
+
+            elements.emergencyStopBtn.addEventListener('click', () => {
+                stopCameraSystem();
+                simulatedSpeed = 0;
+                updateSpeedDisplay();
+                alert('Emergency stop activated. System halted.');
+            });
+
+            elements.calibrateBtn.addEventListener('click', () => {
+                alert('Calibration mode activated. Please ensure clear view of road ahead.');
+            });
+
+            elements.settingsToggleBtn.addEventListener('click', () => {
+                elements.settingsPanel.classList.toggle('open');
+            });
+
+            elements.saveHomeBtn.addEventListener('click', handleSaveHome);
+            elements.addContactBtn.addEventListener('click', handleAddContact);
+            elements.startShareBtn.addEventListener('click', startLocationSharing);
+            elements.stopShareBtn.addEventListener('click', stopLocationSharing);
+            elements.sendShareNowBtn.addEventListener('click', sendLocationNow);
+            elements.panicBtn.addEventListener('click', handlePanic);
+
+            elements.chatToggleBtn.addEventListener('click', toggleChitChat);
+
+            // GBV Emergency Button – hardcoded helpline
+            const emergencyBtn = document.querySelector('.emergency-btn');
+            if (emergencyBtn) {
+                emergencyBtn.addEventListener('click', () => {
+                    window.location.href = 'tel:+27712107897';
+                });
+            }
+
+            // Safe word save button
+            elements.saveSafeWordBtn.addEventListener('click', handleSaveSafeWord);
+        }
+
+        // ==================== INITIALIZE ON LOAD ====================
+        window.addEventListener('load', () => {
+            wireEventListeners();
+            initializeSystem();
+        });
+
+        // PWA Support (optional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            setTimeout(() => {
+                if (confirm('Install AutoGuard as a car safety app?')) {
+                    e.prompt();
+                }
+            }, 10000);
+        });
+
+        console.log('🚗 AutoGuard AI Safety System Loaded');
+    </script>
+</body>
+</html>

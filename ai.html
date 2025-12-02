@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Your Personal Safety Guardian</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            color: #e2e8f0;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg,  #cfa109,  #cfa109);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 0 20px  #cfa109(123, 44, 191, 0.5);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg,  #cfa109,  #cfa109);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .status-bar {
+            background: rgba(123, 44, 191, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid  #cfa109(123, 44, 191, 0.2);
+            padding: 15px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status-dot.emergency {
+            background:   #cfa109;
+            animation: emergencyPulse 0.5s infinite;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .main-interface {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .conversation-area {
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(15, 23, 42, 0.3);
+            border-radius: 10px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message.user-message {
+            justify-content: flex-end;
+        }
+
+        .message.Panic-message {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 15px;
+        }
+
+        .user-message .message-content {
+            background: linear-gradient(135deg,  #cfa109,  #cfa109);
+            color: white;
+        }
+
+        .Panic-message .message-content {
+            background: rgba(148, 163, 184, 0.1);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .timestamp {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .voice-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .voice-visualizer {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 40px;
+            padding: 10px 15px;
+            background: rgba(123, 44, 191, 0.1);
+            border-radius: 20px;
+        }
+
+        .wave-bar {
+            width: 3px;
+            height: 8px;
+            background: linear-gradient(to top,  #cfa109,  #cfa109);
+            border-radius: 2px;
+            animation: wave 1.2s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; height: 10px; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 15px; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 20px; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; height: 25px; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; height: 20px; }
+        .wave-bar:nth-child(6) { animation-delay: 0.5s; height: 15px; }
+        .wave-bar:nth-child(7) { animation-delay: 0.6s; height: 10px; }
+
+        .instructions {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .emergency-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #cfa109(255, 107, 53, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .emergency-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .emergency-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            animation: spin 1s linear infinite;
+        }
+
+        .emergency-header h2 {
+            color:  #cfa109;
+            margin-bottom: 10px;
+        }
+
+        .emergency-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 5px;
+            color: white;
+        }
+
+        .call-btn {
+            background: #cfa109;
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 900;
+        }
+
+        .settings-content {
+            background:  #cfa109;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .settings-header h2 {
+            color: #7b2cbf;
+        }
+
+        .close-settings-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #e2e8f0;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #0f0f23;
+            color: white;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #cfa109,  #cfa109);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .call-options {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .call-option-btn {
+            padding: 10px;
+            border-radius: 5px;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .call-option-btn:hover {
+            background: linear-gradient(135deg,  #cfa109,  #cfa109);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .auth-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color:  #cfa109;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes emergencyPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes wave {
+            0%, 100% { height: 8px; }
+            50% { height: 20px; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .settings-btn:hover {
+            background: rgba(123, 44, 191, 0.3);
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(123, 44, 191, 0.4);
+        }
+
+        .instructions strong {
+            color:  #cfa109;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🛡</div>
+                <h1>Panic</h1>
+            </div>
+            <p class="tagline">Your AI Guardian - Always listening, always protecting</p>
+        </header>
+
+        <div id="authNotice" class="auth-notice" style="display: none;">
+            Authentication required for full features. Data stored locally.
+        </div>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Monitoring for safety</span>
+            </div>
+            <button class="settings-btn" id="settingsBtn">⚙</button>
+        </div>
+
+        <main class="main-interface">
+            <div class="conversation-area" id="conversationArea">
+                <div class="message Panic-message">
+                    <div class="message-content">
+                        <p>Hello! I'm Panic, your AI safety guardian. I'm always listening for your emergency word. You're never alone.</p>
+                        <span class="timestamp" id="welcomeTime"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="voice-indicator">
+                <div class="voice-visualizer">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+            </div>
+
+            <div class="instructions">
+                <p id="instructionText">Continuously listening for emergency word: "<strong>oranges</strong>"</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Emergency Panel -->
+    <div class="emergency-panel" id="emergencyPanel">
+        <div class="emergency-content">
+            <div class="emergency-icon">🚨</div>
+            <div class="emergency-header">
+                <h2>EMERGENCY ACTIVATED</h2>
+                <p>Choose how to contact help:</p>
+            </div>
+            <div class="call-options">
+                <button class="call-option-btn" id="phoneCallBtn">
+                    📞 Phone Call
+                </button>
+                <button class="call-option-btn" id="teamsCallBtn">
+                    💻 Microsoft Teams Call
+                </button>
+                <button class="call-option-btn" id="whatsappCallBtn">
+                    💬 WhatsApp Call
+                </button>
+                <button class="call-option-btn" id="zoomCallBtn">
+                    🎥 Zoom Call
+                </button>
+            </div>
+            <button class="emergency-btn" id="cancelEmergencyBtn" style="background: #6b7280; margin-top: 15px;">
+                Cancel (False Alarm)
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2>Safety Settings</h2>
+                <button class="close-settings-btn" id="closeSettingsBtn">✕</button>
+            </div>
+            
+            <div class="settings-form">
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="userName" placeholder="What should Panic call you?">
+                </div>
+                
+                <div class="form-group">
+                    <label>Emergency Trigger Word</label>
+                    <input type="text" id="emergencyWord" placeholder="oranges">
+                </div>
+                
+                <div class="form-group">
+                    <label>Emergency Phone Number</label>
+                    <input type="tel" id="emergencyPhone" placeholder="911">
+                </div>
+
+                <div class="form-group">
+                    <label>Microsoft Teams Contact</label>
+                    <input type="text" id="emergencyTeams" placeholder="user@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>WhatsApp Number</label>
+                    <input type="tel" id="emergencyWhatsApp" placeholder="+1234567890">
+                </div>
+
+                <div class="form-group">
+                    <label>Zoom Meeting ID</label>
+                    <input type="text" id="emergencyZoom" placeholder="123-456-7890">
+                </div>
+            </div>
+            
+            <button class="save-btn" id="saveSettingsBtn">Save Settings</button>
+        </div>
+    </div>
+
+    <script>
+        class PanicGuardian {
+            constructor() {
+                this.isListening = false;
+                this.recognition = null;
+                this.synthesis = window.speechSynthesis;
+                this.userProfile = this.loadUserProfile();
+                this.emergencyActivated = false;
+                this.isAuthenticated = false;
+                this.firebaseInitialized = false;
+                this.currentLocation = null;
+
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupSpeechRecognition();
+                this.displayWelcomeMessage();
+                this.updateTimestamp();
+                this.showAuthNotice();
+            }
+
+            setupEventListeners() {
+                document.getElementById('settingsBtn').addEventListener('click', () => this.openSettings());
+                document.getElementById('closeSettingsBtn').addEventListener('click', () => this.closeSettings());
+                document.getElementById('saveSettingsBtn').addEventListener('click', () => this.saveSettings());
+                document.getElementById('cancelEmergencyBtn').addEventListener('click', () => this.cancelEmergency());
+
+                // Call options
+                document.getElementById('phoneCallBtn').addEventListener('click', () => this.initiatePhoneCall());
+                document.getElementById('teamsCallBtn').addEventListener('click', () => this.initiateTeamsCall());
+                document.getElementById('whatsappCallBtn').addEventListener('click', () => this.initiateWhatsAppCall());
+                document.getElementById('zoomCallBtn').addEventListener('click', () => this.initiateZoomCall());
+            }
+
+            showAuthNotice() {
+                if (!this.firebaseInitialized) {
+                    document.getElementById('authNotice').style.display = 'block';
+                }
+            }
+
+            setupSpeechRecognition() {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                
+                if (!SpeechRecognition) {
+                    this.addMessage('Panic', '⚠ Your browser doesn\'t support voice monitoring. Please use Chrome or Edge for full protection.');
+                    return;
+                }
+
+                this.recognition = new SpeechRecognition();
+                
+                // Configure for continuous listening
+                this.recognition.continuous = true;
+                this.recognition.interimResults = true;
+                this.recognition.lang = 'en-US';
+
+                this.recognition.onstart = () => {
+                    this.isListening = true;
+                    this.updateStatus('Monitoring for safety');
+                    console.log('Speech recognition started');
+                };
+
+                this.recognition.onend = () => {
+                    this.isListening = false;
+                    if (!this.emergencyActivated) {
+                        console.log('Speech recognition ended, restarting...');
+                        setTimeout(() => {
+                            try {
+                                this.recognition.start();
+                            } catch (e) {
+                                console.error('Error restarting recognition:', e);
+                            }
+                        }, 1000);
+                    }
+                };
+
+                this.recognition.onresult = (event) => {
+                    let transcript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            transcript += event.results[i][0].transcript;
+                        }
+                    }
+                    if (transcript.trim()) {
+                        console.log('Recognized:', transcript);
+                        this.processTranscript(transcript.toLowerCase());
+                    }
+                };
+
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    if (event.error !== 'no-speech' && !this.emergencyActivated) {
+                        setTimeout(() => {
+                            try {
+                                this.recognition.start();
+                            } catch (e) {
+                                console.error('Error restarting after error:', e);
+                            }
+                        }, 2000);
+                    }
+                };
+
+                // Start listening
+                try {
+                    this.recognition.start();
+                } catch (e) {
+                    console.error('Error starting recognition:', e);
+                    this.addMessage('Panic', '⚠ Could not start voice monitoring. Please refresh the page.');
+                }
+            }
+
+            processTranscript(transcript) {
+                const emergencyWord = (this.userProfile.emergencyWord || 'oranges').toLowerCase();
+
+                // Check for emergency word
+                if (transcript.includes(emergencyWord)) {
+                    this.activateEmergency();
+                    return;
+                }
+
+                // Check for wake word
+                if (transcript.includes('hey Panic') || transcript.includes('Panic')) {
+                    this.addMessage('user', transcript);
+                    const response = this.generateResponse(transcript);
+                    this.addMessage('Panic', response);
+                    this.speak(response);
+                }
+            }
+
+            generateResponse(input) {
+                const name = this.userProfile.name || 'friend';
+
+                if (input.includes('help') || input.includes('emergency')) {
+                    return `${name}, if you're in danger, just say "${this.userProfile.emergencyWord || 'oranges'}" and I'll call for help immediately.`;
+                }
+
+                if (input.includes('safe') || input.includes('safety')) {
+                    return `Your safety is my priority. I'm always listening for "${this.userProfile.emergencyWord || 'oranges'}".`;
+                }
+
+                if (input.includes('hello') || input.includes('hi')) {
+                    return `Hi ${name}! I'm Panic, your safety guardian. How can I help?`;
+                }
+
+                return `I'm here for you, ${name}. Remember, say "${this.userProfile.emergencyWord || 'oranges'}" if you need emergency help.`;
+            }
+
+            speak(text) {
+                if (!this.synthesis) return;
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                this.synthesis.speak(utterance);
+            }
+
+            updateStatus(text) {
+                document.getElementById('statusText').textContent = text;
+            }
+
+            addMessage(type, message) {
+                const conversationArea = document.getElementById('conversationArea');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}-message`;
+
+                const timestamp = new Date().toLocaleTimeString();
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <p>${message}</p>
+                        <span class="timestamp">${timestamp}</span>
+                    </div>
+                `;
+
+                conversationArea.appendChild(messageDiv);
+                conversationArea.scrollTop = conversationArea.scrollHeight;
+            }
+
+            displayWelcomeMessage() {
+                const name = this.userProfile.name || 'friend';
+                const welcomeMessage = `Hello ${name}! I'm Panic, your AI safety guardian. I'm always listening for "${this.userProfile.emergencyWord || 'oranges'}".`;
+                
+                const welcomeElement = document.querySelector('.Panic-message .message-content p');
+                if (welcomeElement) {
+                    welcomeElement.textContent = welcomeMessage;
+                }
+                
+                document.getElementById('instructionText').innerHTML = 
+                    `Continuously listening for emergency word: "<strong>${this.userProfile.emergencyWord || 'oranges'}</strong>"`;
+            }
+
+            updateTimestamp() {
+                document.getElementById('welcomeTime').textContent = new Date().toLocaleTimeString();
+            }
+
+            // Emergency Functions
+            activateEmergency() {
+                this.emergencyActivated = true;
+                if (this.recognition) this.recognition.stop();
+                
+                document.getElementById('emergencyPanel').style.display = 'flex';
+                document.getElementById('statusDot').className = 'status-dot emergency';
+                this.updateStatus('EMERGENCY ACTIVATED');
+                
+                this.addMessage('Panic', '🚨 EMERGENCY DETECTED: Preparing to call for help.');
+                this.speak("Emergency detected. Preparing to call for help.");
+                
+                // Log emergency to Firebase if available
+                this.logEmergencyToFirebase();
+            }
+
+            logEmergencyToFirebase() {
+                if (this.firebaseInitialized && window.firebaseDB) {
+                    const emergency = {
+                        timestamp: Date.now(),
+                        location: this.currentLocation || 'Unknown',
+                        userId: this.userProfile.name || 'Anonymous',
+                        status: 'activated'
+                    };
+                    
+                    try {
+                        window.firebaseDB.logEmergency(emergency);
+                    } catch (error) {
+                        console.error('Failed to log emergency to Firebase:', error);
+                    }
+                }
+            }
+
+            cancelEmergency() {
+                if (confirm('Are you sure you want to cancel the emergency? Only do this if it was a false alarm.')) {
+                    this.emergencyActivated = false;
+                    document.getElementById('emergencyPanel').style.display = 'none';
+                    document.getElementById('statusDot').className = 'status-dot';
+                    this.updateStatus('Monitoring for safety');
+                    
+                    this.addMessage('Panic', 'Emergency canceled. Resuming normal monitoring.');
+                    this.speak("Emergency canceled. Resuming normal monitoring.");
+                    
+                    // Restart listening
+                    setTimeout(() => {
+                        try {
+                            if (this.recognition) this.recognition.start();
+                        } catch (e) {
+                            console.error('Error restarting after emergency:', e);
+                        }
+                    }, 1000);
+                }
+            }
+
+            initiatePhoneCall() {
+                const phoneNumber = this.userProfile.emergencyPhone || '911';
+                this.addMessage('Panic', `📞 Calling phone number: ${phoneNumber}`);
+                
+                // Try standard tel: protocol first
+                try {
+                    window.open(`tel:${phoneNumber}`, '_self');
+                } catch (e) {
+                    console.error('Standard phone call failed:', e);
+                    
+                    // Fallback for browsers that don't support tel:
+                    try {
+                        window.location.href = `tel:${phoneNumber}`;
+                    } catch (e2) {
+                        console.error('Fallback phone call failed:', e2);
+                        this.addMessage('Panic', `⚠ Could not initiate phone call. Please dial ${phoneNumber} manually.`);
+                    }
+                }
+            }
+
+            initiateTeamsCall() {
+                const teamsContact = this.userProfile.emergencyTeams;
+                if (!teamsContact) {
+                    this.addMessage('Panic', '⚠ No Microsoft Teams contact configured in settings.');
+                    return;
+                }
+                
+                this.addMessage('Panic', `💻 Calling Microsoft Teams contact: ${teamsContact}`);
+                
+                // Teams URI scheme
+                try {
+                    window.open(`msteams:l/chat/0/0?users=${teamsContact}`, '_blank');
+                } catch (e) {
+                    console.error('Teams call failed:', e);
+                    this.addMessage('Panic', `⚠ Could not initiate Teams call. Please contact ${teamsContact} manually.`);
+                }
+            }
+
+            initiateWhatsAppCall() {
+                const whatsappNumber = this.userProfile.emergencyWhatsApp;
+                if (!whatsappNumber) {
+                    this.addMessage('Panic', '⚠ No WhatsApp number configured in settings.');
+                    return;
+                }
+                
+                this.addMessage('Panic', `💬 Calling WhatsApp number: ${whatsappNumber}`);
+                
+                // WhatsApp API
+                try {
+                    window.open(`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`, '_blank');
+                } catch (e) {
+                    console.error('WhatsApp call failed:', e);
+                    this.addMessage('Panic', `⚠ Could not initiate WhatsApp call. Please contact ${whatsappNumber} manually.`);
+                }
+            }
+
+            initiateZoomCall() {
+                const zoomMeeting = this.userProfile.emergencyZoom;
+                if (!zoomMeeting) {
+                    this.addMessage('Panic', '⚠ No Zoom meeting ID configured in settings.');
+                    return;
+                }
+                
+                this.addMessage('Panic', `🎥 Joining Zoom meeting: ${zoomMeeting}`);
+                
+                // Zoom URI scheme
+                try {
+                    window.open(`zoommtg://zoom.us/join?confno=${zoomMeeting.replace(/[^0-9]/g, '')}`, '_blank');
+                } catch (e) {
+                    console.error('Zoom call failed:', e);
+                    // Fallback to web client
+                    try {
+                        window.open(`https://zoom.us/j/${zoomMeeting.replace(/[^0-9]/g, '')}`, '_blank');
+                    } catch (e2) {
+                        this.addMessage('Panic', `⚠ Could not join Zoom meeting. Please join meeting ID ${zoomMeeting} manually.`);
+                    }
+                }
+            }
+
+            // Settings Management
+            openSettings() {
+                document.getElementById('settingsPanel').style.display = 'flex';
+                document.getElementById('userName').value = this.userProfile.name || '';
+                document.getElementById('emergencyWord').value = this.userProfile.emergencyWord || 'oranges';
+                document.getElementById('emergencyPhone').value = this.userProfile.emergencyPhone || '911';
+                document.getElementById('emergencyTeams').value = this.userProfile.emergencyTeams || '';
+                document.getElementById('emergencyWhatsApp').value = this.userProfile.emergencyWhatsApp || '';
+                document.getElementById('emergencyZoom').value = this.userProfile.emergencyZoom || '';
+            }
+
+            closeSettings() {
+                document.getElementById('settingsPanel').style.display = 'none';
+            }
+
+            saveSettings() {
+                this.userProfile = {
+                    name: document.getElementById('userName').value,
+                    emergencyWord: document.getElementById('emergencyWord').value || 'oranges',
+                    emergencyPhone: document.getElementById('emergencyPhone').value || '911',
+                    emergencyTeams: document.getElementById('emergencyTeams').value,
+                    emergencyWhatsApp: document.getElementById('emergencyWhatsApp').value,
+                    emergencyZoom: document.getElementById('emergencyZoom').value
+                };
+                
+                // Store locally
+                window.PanicProfile = this.userProfile;
+
+                // Try to save to Firebase if available
+                if (this.firebaseInitialized && window.firebaseDB) {
+                    try {
+                        window.firebaseDB.saveProfile(this.userProfile);
+                    } catch (error) {
+                        console.error('Failed to save to Firebase:', error);
+                    }
+                }
+                
+                this.closeSettings();
+                this.displayWelcomeMessage();
+                
+                this.addMessage('Panic', 'Settings updated! Your safety is my priority.');
+            }
+
+            loadUserProfile() {
+                // Try to load from memory first, then fallback to defaults
+                if (window.PanicProfile) {
+                    return window.PanicProfile;
+                }
+                
+                // Default profile
+                return {
+                    name: '',
+                    emergencyWord: 'cake',
+                    emergencyPhone: '911',
+                    emergencyTeams: '',
+                    emergencyWhatsApp: '',
+                    emergencyZoom: ''
+                };
+            }
+
+            // Firebase integration methods
+            initializeFirebase() {
+                try {
+                    if (window.firebaseApp && window.firebaseDB) {
+                        this.firebaseInitialized = true;
+                        document.getElementById('authNotice').style.display = 'none';
+                        this.addMessage('Panic', '✅ Connected to cloud services for enhanced protection.');
+                    }
+                } catch (error) {
+                    console.error('Firebase initialization failed:', error);
+                    this.addMessage('Panic', '⚠ Running in offline mode. Settings stored locally.');
+                }
+            }
+        }
+
+        // Initialize Panic when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const Panic = new PanicGuardian();
+            
+            // Make Panic accessible globally for Firebase integration
+            window.Panic = Panic;
+            
+            // Prevent page from being closed during emergency
+            window.addEventListener('beforeunload', (e) => {
+                if (Panic.emergencyActivated) {
+                    e.preventDefault();
+                    e.returnValue = 'Emergency is active. Are you sure you want to leave?';
+                }
+            });
+
+            // Try to initialize Firebase after a delay
+            setTimeout(() => {
+                Panic.initializeFirebase();
+            }, 2000);
+        });
+    </script>
+
+    <!-- Firebase Integration Script -->
+    <script>
+        // Firebase Database Handler
+        class FirebaseHandler {
+            constructor() {
+                this.app = null;
+                this.auth = null;
+                this.database = null;
+                this.currentUser = null;
+                this.init();
+            }
+
+            async init() {
+                try {
+                    // Firebase config - you'll need to replace with your actual config
+                const firebaseConfig = {
+  apiKey: "AIzaSyDVVNN0hHrR90FiEaPoJt8H4MVR8KBkWZw",
+  authDomain: "community-forum-75dc6.firebaseapp.com",
+  databaseURL: "https://community-forum-75dc6-default-rtdb.firebaseio.com",
+  projectId: "community-forum-75dc6",
+  storageBucket: "community-forum-75dc6.appspot.com",
+  messagingSenderId: "524182558257",
+  appId: "1:524182558257:web:3612faacdd8fbcb288a710",
+  measurementId: "G-JGMRZDKTG2"
+};
+
+                    // Note: In a real implementation, you would import Firebase modules
+                    // For this demo, we'll simulate the Firebase functionality
+                    console.log('Firebase config ready:', firebaseConfig);
+                    
+                    // Simulate Firebase initialization
+                    this.simulateFirebaseConnection();
+                    
+                } catch (error) {
+                    console.error('Firebase initialization failed:', error);
+                    this.handleFirebaseError(error);
+                }
+            }
+
+            simulateFirebaseConnection() {
+                // Simulate connection after 2 seconds
+                setTimeout(() => {
+                    console.log('Simulated Firebase connection established');
+                    window.firebaseApp = true;
+                    window.firebaseDB = this;
+                    
+                    // Notify Panic that Firebase is ready
+                    if (window.Panic) {
+                        window.Panic.initializeFirebase();
+                    }
+                }, 2000);
+            }
+
+            // Simulated Firebase methods
+            async saveProfile(profile) {
+                console.log('Saving profile to Firebase:', profile);
+                // In real implementation, this would save to Firebase Realtime Database
+                return Promise.resolve(profile);
+            }
+
+            async loadProfile(userId) {
+                console.log('Loading profile from Firebase for user:', userId);
+                // In real implementation, this would load from Firebase
+                return Promise.resolve(null);
+            }
+
+            async logEmergency(emergencyData) {
+                console.log('Logging emergency to Firebase:', emergencyData);
+                // In real implementation, this would save emergency data
+                return Promise.resolve(emergencyData);
+            }
+
+            async authenticate(email, password) {
+                console.log('Authenticating user:', email);
+                // In real implementation, this would authenticate with Firebase Auth
+                return Promise.resolve({ uid: 'demo-user', email: email });
+            }
+
+            handleFirebaseError(error) {
+                console.error('Firebase error:', error);
+                // Panic will continue to work in offline mode
+            }
+        }
+
+        // Initialize Firebase handler
+        const firebaseHandler = new FirebaseHandler();
+
+        // Export for global access
+        window.FirebaseHandler = FirebaseHandler;
+    </script>
+
+    <!-- Additional Safety Features -->
+    <script>
+        // Advanced safety features
+        class SafetyEnhancements {
+            constructor(Panic) {
+                this.Panic = Panic;
+                this.locationWatcher = null;
+                this.batteryMonitor = null;
+                this.connectionMonitor = null;
+                this.init();
+            }
+
+            init() {
+                this.setupLocationTracking();
+                this.setupBatteryMonitoring();
+                this.setupConnectionMonitoring();
+                this.setupKeyboardShortcuts();
+            }
+
+            setupLocationTracking() {
+                if ('geolocation' in navigator) {
+                    this.locationWatcher = navigator.geolocation.watchPosition(
+                        (position) => {
+                            this.Panic.currentLocation = {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude,
+                                timestamp: Date.now()
+                            };
+                        },
+                        (error) => {
+                            console.warn('Location tracking failed:', error);
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+                    );
+                }
+            }
+
+            setupBatteryMonitoring() {
+                if ('getBattery' in navigator) {
+                    navigator.getBattery().then((battery) => {
+                        this.batteryMonitor = battery;
+                        
+                        // Alert if battery is critically low
+                        battery.addEventListener('levelchange', () => {
+                            if (battery.level < 0.1 && !battery.charging) {
+                                this.Panic.addMessage('Panic', '⚠ Battery critically low. Consider charging your device for continued protection.');
+                            }
+                        });
+                    });
+                }
+            }
+
+            setupConnectionMonitoring() {
+                window.addEventListener('online', () => {
+                    this.Panic.addMessage('Panic', '📶 Connection restored. Full protection active.');
+                });
+
+                window.addEventListener('offline', () => {
+                    this.Panic.addMessage('Panic', '📵 Connection lost. Emergency calls may still work.');
+                });
+            }
+
+            setupKeyboardShortcuts() {
+                // Ctrl+Shift+E for emergency (hidden shortcut)
+                document.addEventListener('keydown', (event) => {
+                    if (event.ctrlKey && event.shiftKey && event.key === 'E') {
+                        event.preventDefault();
+                        this.Panic.activateEmergency();
+                    }
+                });
+
+                // Escape key to cancel emergency
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && this.Panic.emergencyActivated) {
+                        event.preventDefault();
+                        this.Panic.cancelEmergency();
+                    }
+                });
+            }
+
+            cleanup() {
+                if (this.locationWatcher) {
+                    navigator.geolocation.clearWatch(this.locationWatcher);
+                }
+            }
+        }
+
+        // Initialize safety enhancements when Panic is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.Panic) {
+                    window.safetyEnhancements = new SafetyEnhancements(window.Panic);
+                }
+            }, 1000);
+        });
+
+        // Service Worker registration for offline functionality
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch((error) => {
+                console.log('Service Worker registration failed:', error);
+            });
+        }
+
+        // Notification permission request
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    console.log('Notification permission granted');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
