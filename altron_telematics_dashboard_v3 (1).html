@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Altron Telematics – Driver Risk & Behaviour Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #22d3ee;
+      --accent-soft: rgba(34, 211, 238, 0.10);
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border-subtle: #1f2937;
+      --shadow-soft: 0 22px 45px rgba(15, 23, 42, 0.9);
+      --radius-xl: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
+      color: var(--text-main);
+      padding: 24px;
+    }
+    .dashboard { max-width: 1500px; margin: 0 auto 40px auto; }
+    header { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--accent); background: var(--accent-soft);
+      padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(34,211,238,0.45);
+    }
+    h1 { font-size: 28px; font-weight: 700; letter-spacing: 0.04em; }
+    header p { max-width: 860px; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+    .tagline { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    .tagline span {
+      font-size: 11px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(15,23,42,0.85); border: 1px solid rgba(148,163,184,0.6);
+    }
+    .card {
+      background: radial-gradient(circle at 0 0, rgba(34, 211, 238, 0.09) 0, transparent 55%), var(--card);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      padding: 16px 18px 18px 18px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .card-inner { position: relative; z-index: 1; }
+    .card h2 { font-size: 15px; margin-bottom: 6px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+    .card p { font-size: 13px; color: var(--text-muted); }
+    .kpi-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+    @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 800px) { .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .kpi-grid { grid-template-columns: 1fr; } }
+    .kpi-card {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 14px;
+      padding: 10px 10px 12px 10px;
+      border: 1px solid #1f2937;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .kpi-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; }
+    .kpi-value { font-size: 19px; font-weight: 600; display: flex; align-items: baseline; gap: 4px; }
+    .kpi-value span.unit { font-size: 11px; color: var(--text-muted); }
+    .kpi-trend { font-size: 11px; color: var(--text-muted); }
+    .pill {
+      font-size: 10px; padding: 2px 6px; border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5); margin-left: 4px;
+    }
+    .pill.high { border-color: rgba(248,113,113,0.9); color: #fecaca; }
+    .pill.medium { border-color: rgba(250,204,21,0.9); color: #fef3c7; }
+    .grid-3 { display: grid; grid-template-columns: 1.5fr 1.5fr 1.3fr; gap: 16px; }
+    @media (max-width: 1200px) { .grid-3 { grid-template-columns: 1fr; } }
+    .grid-2 { display: grid; grid-template-columns: 1.5fr 1.5fr; gap: 16px; }
+    @media (max-width: 1200px) { .grid-2 { grid-template-columns: 1fr; } }
+    .chart-wrapper { margin-top: 12px; height: 250px; }
+    .chart-wrapper.tall { height: 300px; }
+    .chart-caption { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+    footer { margin-top: 24px; font-size: 11px; color: var(--text-muted); text-align: right; opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <header>
+      <div class="badge">Altron Telematics – Real Fleet Data</div>
+      <h1>Driver Risk & Behaviour Dashboard (Altron Telematics Sample)</h1>
+      <p>
+        This dashboard summarises real telematics records from an Altron dataset. It focuses on
+        how speeding, g-forces, road conditions and time-of-day patterns translate into a
+        composite risk score for drivers. The goal is to show how objective telematics can
+        uncover risk patterns and motivate behaviour-focused safety solutions.
+      </p>
+      <div class="tagline">
+        <span>Speed & overspeed analysis</span>
+        <span>Harsh event g-force signals</span>
+        <span>Night vs daytime risk</span>
+        <span>Road & town risk patterns</span>
+        <span>Composite telematics risk index</span>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="card-inner">
+        <h2>Fleet Risk Pulse – Key Indicators</h2>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Overspeeding</div>
+            <div class="kpi-value"><span>2.2</span><span class="unit">%</span></div>
+            <div class="kpi-trend">
+              Share of records where actual speed exceeds posted road speed.
+              <span class="pill medium">Speed discipline</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">High-Risk Records</div>
+            <div class="kpi-value"><span>0</span><span class="unit">records</span></div>
+            <div class="kpi-trend">
+              Records with composite risk score &gt; 0.65 in this sample.
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Average Risk Score</div>
+            <div class="kpi-value"><span>0.225</span></div>
+            <div class="kpi-trend">
+              0 (low) to 1 (high). Most records sit in the lower range, with a non-trivial tail.
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Night-Time Driving</div>
+            <div class="kpi-value"><span>14.4</span><span class="unit">%</span></div>
+            <div class="kpi-trend">
+              Proportion of records between 21:00–05:00.
+              <span class="pill high">Fatigue exposure</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Harsh Events</div>
+            <div class="kpi-value"><span>28883</span><span class="unit">events</span></div>
+            <div class="kpi-trend">
+              Harsh braking/acceleration/cornering in this sample
+              (~577.7 events / 1 000 records).
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-3" style="margin-top:16px;">
+          <div>
+            <div class="chart-wrapper tall">
+              <canvas id="riskHistogram"></canvas>
+            </div>
+            <p class="chart-caption">
+              Distribution of the composite telematics risk score. The shape highlights how
+              risk is concentrated in a smaller subset of records rather than being uniform
+              across the fleet.
+            </p>
+          </div>
+          <div>
+            <div class="chart-wrapper tall">
+              <canvas id="overspeedBandChart"></canvas>
+            </div>
+            <p class="chart-caption">
+              Overspeeding rate by road speed limit band. Even low overspeed percentages can
+              represent substantial exposure when multiplied across many kilometres driven.
+            </p>
+          </div>
+          <div>
+            <div class="chart-wrapper tall">
+              <canvas id="hourlyRiskChart"></canvas>
+            </div>
+            <p class="chart-caption">
+              Average risk score by hour of day. Night-time and early-morning patterns are
+              typically where fatigue and reduced visibility combine with higher risk.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-inner">
+        <h2>Harsh Events & Road Context</h2>
+        <div class="grid-2">
+          <div>
+            <div class="chart-wrapper tall">
+              <canvas id="harshByHourChart"></canvas>
+            </div>
+            <p class="chart-caption">
+              Frequency of harsh braking, acceleration and cornering by hour of day (as a
+              proportion of all records in that hour). Peaks indicate periods of unstable driving.
+            </p>
+          </div>
+          <div>
+            <div class="chart-wrapper tall">
+              <canvas id="roughRoadRiskChart"></canvas>
+            </div>
+            <p class="chart-caption">
+              Average risk on rough versus normal roads. Even when rough-road segments are rare,
+              they still shape how we interpret g-forces and telematics alerts.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-inner">
+        <h2>Spatial Dimension – High-Risk Towns</h2>
+        <div class="grid-2">
+          <div>
+            <div class="chart-wrapper tall">
+              <canvas id="townRiskChart"></canvas>
+            </div>
+            <p class="chart-caption">
+              Average risk score by town (top 5 by mean risk in this sample). This helps
+              identify locations where driving patterns are consistently more aggressive.
+            </p>
+          </div>
+          <div>
+            <div class="chart-wrapper tall">
+              <canvas id="townVolumeChart"></canvas>
+            </div>
+            <p class="chart-caption">
+              Volume of records by town for the same set. Combining frequency with risk gives a
+              more complete picture of exposure.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-inner">
+        <h2>Trip-Level Example – Speed & Risk Over Time (Single Device)</h2>
+        <div class="chart-wrapper tall">
+          <canvas id="timeSeriesChart"></canvas>
+        </div>
+        <p class="chart-caption">
+          Extract from one device (IMEI: 860305056540067) showing how speed and the composite
+          risk index move together across a short segment. Spikes in risk often line up with
+          overspeeding or harsh g-force events.
+        </p>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-inner">
+        <h2>Correlation with Composite Risk – Key Telematics Features</h2>
+        <div class="chart-wrapper tall">
+          <canvas id="corrBarChart"></canvas>
+        </div>
+        <p class="chart-caption">
+          Correlation between each telematics feature and the composite risk score. Higher values
+          indicate variables that move most strongly with risk, helping prioritise which signals
+          to monitor and optimise in a safety programme.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      Data sample: first 50 000 records from the uploaded Altron telematics dataset, summarised for analytics and dashboard design.
+    </footer>
+  </div>
+
+  <script>
+    // Risk histogram
+    const riskHistCtx = document.getElementById("riskHistogram").getContext("2d");
+    new Chart(riskHistCtx, {
+      type: "bar",
+      data: {
+        labels: [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95],
+        datasets: [{ 
+          label: "Count",
+          data: [18294, 2795, 28, 24190, 265, 4421, 7, 0, 0, 0],
+          backgroundColor: "rgba(34,197,94,0.85)",
+          borderRadius: 6,
+          maxBarThickness: 26
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: { display: true, text: "Risk score bins", color: "#e5e7eb", font: { size: 11 } },
+            ticks: { color: "#9ca3af", font: { size: 10 } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // Overspeed by road speed band
+    const overspeedBandCtx = document.getElementById("overspeedBandChart").getContext("2d");
+    new Chart(overspeedBandCtx, {
+      type: "bar",
+      data: {
+        labels: ['<=40', '41-60', '61-80', '81-100', '101-120', '120+'],
+        datasets: [{ 
+          label: "% of records overspeeding",
+          data: [0.0, 3.2, 1.2, 0.0, 0.0, 0.0],
+          backgroundColor: "rgba(239,68,68,0.9)",
+          borderRadius: 7,
+          maxBarThickness: 36
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: { color: "#e5e7eb", font: { size: 11 } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#9ca3af", font: { size: 11 }, callback: function(v) { return v + "%"; } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // Hourly risk line
+    const hourlyRiskCtx = document.getElementById("hourlyRiskChart").getContext("2d");
+    new Chart(hourlyRiskCtx, {
+      type: "line",
+      data: {
+        labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+        datasets: [{ 
+          label: "Average risk score",
+          data: [0.0, 0.0, 0.0, 0.196, 0.393, 0.24, 0.216, 0.208, 0.179, 0.185, 0.173, 0.0, 0.0, 0.216, 0.19, 0.221, 0.199, 0.175, 0.098, 0.145, 0.0, 0.325, 0.0, 0.0],
+          borderColor: "rgba(129,140,248,0.9)",
+          borderWidth: 2,
+          tension: 0.25,
+          pointRadius: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: { display: true, text: "Hour of day", color: "#e5e7eb", font: { size: 11 } },
+            ticks: { color: "#9ca3af", font: { size: 10 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          },
+          y: {
+            beginAtZero: true,
+            max: 1,
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+    // Harsh events by hour
+    const harshByHourCtx = document.getElementById("harshByHourChart").getContext("2d");
+    new Chart(harshByHourCtx, {
+      type: "line",
+      data: {
+        labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+        datasets: [
+          {
+            label: "Harsh braking",
+            data: [0.0, 0.0, 0.0, 0.02, 0.278, 0.329, 0.154, 0.188, 0.179, 0.146, 0.139, 0.0, 0.0, 0.195, 0.156, 0.255, 0.217, 0.184, 0.098, 0.134, 0.0, 0.0, 0.0, 0.0],
+            borderColor: "rgba(248,113,113,0.9)",
+            borderWidth: 2,
+            tension: 0.25,
+            pointRadius: 2
+          },
+          {
+            label: "Harsh acceleration",
+            data: [0.0, 0.0, 0.0, 0.02, 0.222, 0.208, 0.205, 0.183, 0.229, 0.198, 0.202, 0.0, 0.0, 0.202, 0.222, 0.191, 0.189, 0.216, 0.164, 0.128, 0.0, 0.5, 0.0, 0.0],
+            borderColor: "rgba(34,197,94,0.9)",
+            borderWidth: 2,
+            tension: 0.25,
+            pointRadius: 2
+          },
+          {
+            label: "Harsh cornering",
+            data: [0.0, 0.0, 0.0, 0.114, 0.446, 0.388, 0.469, 0.369, 0.282, 0.356, 0.311, 0.0, 0.0, 0.415, 0.316, 0.387, 0.341, 0.276, 0.142, 0.273, 0.0, 0.5, 0.0, 0.0],
+            borderColor: "rgba(56,189,248,0.9)",
+            borderWidth: 2,
+            tension: 0.25,
+            pointRadius: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            title: { display: true, text: "Hour of day", color: "#e5e7eb", font: { size: 11 } },
+            ticks: { color: "#9ca3af", font: { size: 10 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#9ca3af", font: { size: 11 }, callback: function(v) { return (v*100).toFixed(1) + "%"; } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          }
+        }
+      }
+    });
+
+    // Rough road vs normal risk
+    const roughRoadCtx = document.getElementById("roughRoadRiskChart").getContext("2d");
+    new Chart(roughRoadCtx, {
+      type: "bar",
+      data: {
+        labels: ["Normal road", "Rough road"],
+        datasets: [{ 
+          label: "Average risk score",
+          data: [0.225, 0.225],
+          backgroundColor: ["rgba(52,211,153,0.9)", "rgba(234,179,8,0.9)"],
+          borderRadius: 8,
+          maxBarThickness: 46
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: { color: "#e5e7eb", font: { size: 11 } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            max: 1,
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          }
+        }
+      }
+    });
+
+    // Town risk bar
+    const townRiskCtx = document.getElementById("townRiskChart").getContext("2d");
+    new Chart(townRiskCtx, {
+      type: "bar",
+      data: {
+        labels: ['Blue Downs', 'Mfuleni', 'Macassar', 'Eersterivier', 'Somerset West'],
+        datasets: [{ 
+          label: "Average risk score",
+          data: [0.275, 0.257, 0.253, 0.214, 0.194],
+          backgroundColor: "rgba(96,165,250,0.9)",
+          borderRadius: 7,
+          maxBarThickness: 42
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: { color: "#e5e7eb", font: { size: 11 } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            max: 1,
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          }
+        }
+      }
+    });
+
+    // Town volume bar
+    const townVolumeCtx = document.getElementById("townVolumeChart").getContext("2d");
+    new Chart(townVolumeCtx, {
+      type: "bar",
+      data: {
+        labels: ['Blue Downs', 'Mfuleni', 'Macassar', 'Eersterivier', 'Somerset West'],
+        datasets: [{ 
+          label: "Record count",
+          data: [6084, 11907, 5971, 2160, 6615],
+          backgroundColor: "rgba(148,163,184,0.9)",
+          borderRadius: 7,
+          maxBarThickness: 42
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: { color: "#e5e7eb", font: { size: 11 } },
+            grid: { display: false }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          }
+        }
+      }
+    });
+
+    // Time series chart
+    const timeSeriesCtx = document.getElementById("timeSeriesChart").getContext("2d");
+    const segLabels = ['16:07:47', '16:07:48', '16:07:51', '16:07:52', '16:07:53', '16:07:54', '16:07:55', '16:07:56', '16:07:57', '16:07:58', '16:07:59', '16:08:00', '16:08:01', '16:08:02', '16:08:03', '16:08:04', '16:08:05', '16:08:06', '16:08:07', '16:08:08', '16:08:09', '16:08:10', '16:08:11', '16:08:12', '16:08:13', '16:08:14', '16:08:15', '16:08:16', '16:08:17', '16:08:18', '16:08:19', '16:08:20', '16:08:21', '16:08:22', '16:08:23', '16:08:24', '16:08:25', '16:08:26', '16:08:27', '16:08:28', '16:08:29', '16:08:30', '16:08:31', '16:08:32', '16:08:33', '16:08:34', '16:08:35', '16:08:35', '16:08:35', '16:08:36', '16:08:37', '16:08:38', '16:08:39', '16:08:40', '16:08:41', '16:08:42', '16:08:43', '16:08:44', '16:08:45', '16:08:46', '16:08:47', '16:08:48', '16:08:49', '16:08:50', '16:08:51', '16:08:52', '16:08:53', '16:08:54', '16:08:55', '16:08:56', '16:08:57', '16:08:58', '16:08:59', '16:09:00', '16:09:01', '16:09:02', '16:09:03', '16:09:04', '16:09:05', '16:09:06', '16:09:07', '16:09:08', '16:09:09', '16:09:10', '16:09:11', '16:09:12', '16:09:13', '16:09:14', '16:09:15', '16:09:16', '16:09:17', '16:09:18', '16:09:19', '16:09:20', '16:09:21', '16:09:22', '16:09:23', '16:09:24', '16:09:25', '16:09:26', '16:09:27', '16:09:28', '16:09:29', '16:09:30', '16:09:31', '16:09:32', '16:09:33', '16:09:34', '16:09:35', '16:09:36', '16:09:37', '16:09:38', '16:09:39', '16:09:40', '16:09:41', '16:09:42', '16:09:43', '16:09:44', '16:09:45', '16:09:46'];
+    const segSpeed = [0, 0, 0, 0, 0, 0, 14, 16, 19, 21, 23, 24, 19, 14, 17, 18, 17, 0, 0, 0, 15, 17, 19, 21, 22, 25, 27, 27, 26, 26, 26, 25, 24, 21, 16, 0, 0, 0, 0, 0, 0, 0, 0, 15, 14, 16, 23, 23, 19, 24, 23, 23, 23, 23, 25, 24, 24, 25, 25, 26, 26, 26, 22, 19, 22, 25, 28, 27, 26, 25, 27, 26, 25, 23, 21, 19, 16, 0, 0, 0, 0, 0, 16, 19, 22, 21, 19, 19, 19, 20, 20, 21, 20, 20, 20, 20, 19, 18, 19, 19, 18, 17, 18, 18, 16, 0, 0, 0, 0, 0, 19, 25, 27, 26, 25, 23, 21, 21, 20, 18];
+    const segRisk = [0.35, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.0, 0.0, 0.0, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.0, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.0, 0.35, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.0, 0.0, 0.0, 0.0, 0.35, 0.0, 0.0, 0.0, 0.0, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.0, 0.35, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35, 0.0, 0.35, 0.35, 0.35, 0.35, 0.35, 0.35];
+    new Chart(timeSeriesCtx, {
+      type: "line",
+      data: {
+        labels: segLabels,
+        datasets: [
+          {
+            label: "Speed (km/h)",
+            data: segSpeed,
+            borderColor: "rgba(59,130,246,0.9)",
+            borderWidth: 2,
+            tension: 0.25,
+            yAxisID: "y"
+          },
+          {
+            label: "Risk score",
+            data: segRisk,
+            borderColor: "rgba(248,113,113,0.9)",
+            borderWidth: 2,
+            tension: 0.25,
+            yAxisID: "y1"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            type: "linear",
+            position: "left",
+            title: { display: true, text: "Speed (km/h)", color: "#e5e7eb", font: { size: 11 } },
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          },
+          y1: {
+            type: "linear",
+            position: "right",
+            title: { display: true, text: "Risk score", color: "#e5e7eb", font: { size: 11 } },
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+            grid: { drawOnChartArea: false },
+            min: 0, max: 1
+          },
+          x: {
+            ticks: { color: "#9ca3af", font: { size: 9 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          }
+        }
+      }
+    });
+
+    // Correlation bar chart
+    const corrCtx = document.getElementById("corrBarChart").getContext("2d");
+    new Chart(corrCtx, {
+      type: "bar",
+      data: {
+        labels: ['speed', 'roadspeed', 'overspeed_margin', 'gforce_forward', 'gforce_backward', 'gforce_left', 'gforce_right', 'rough_road', 'night_flag'],
+        datasets: [{ 
+          label: "Correlation with risk score",
+          data: [0.153, 0.148, 0.068, 0.34, 0.371, 0.333, 0.324, 0.0, 0.317],
+          backgroundColor: "rgba(56,189,248,0.9)",
+          borderRadius: 6,
+          maxBarThickness: 32
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            min: 0,
+            max: 1,
+            ticks: { color: "#9ca3af", font: { size: 11 } },
+            grid: { color: "rgba(31,41,55,0.7)" }
+          },
+          y: {
+            ticks: { color: "#e5e7eb", font: { size: 11 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
